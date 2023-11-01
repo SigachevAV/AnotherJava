@@ -1,12 +1,9 @@
 package org.example;
 
-import java.util.Observable;
-import java.util.Observer;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 public class Game extends Observable {
-    public Queue<Turn> turnQueue = new PriorityQueue<>();
+    public Deque<Turn> m_turnQueue = new ArrayDeque<>();
     public Board m_board;
     public Integer m_currentPlayer;
     public Game()
@@ -113,5 +110,7 @@ public class Game extends Observable {
         }
         return false;
     }
+
+
 
 }

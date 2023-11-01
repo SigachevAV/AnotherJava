@@ -6,16 +6,27 @@ import java.util.List;
 
 public class Board implements Serializable
 {
-    public List<List<Integer>> m_board = new ArrayList<>();
+    private static final long serialVersionUID = 1234567L;
+    public List<List<Integer>> m_board = new ArrayList<List<Integer>>();
 
     public Board()
     {
         for(int i = 0; i<19; i++)
         {
-            m_board.add(new ArrayList<>());
+            m_board.add(new ArrayList<Integer>());
             for (int j = 0; j < 19; j++)
             {
                 m_board.get(i).add(0);
+            }
+        }
+    }
+    public Board(Board _board)
+    {
+        this.m_board = new ArrayList<>();
+        for (int i = 0; i < 19; i++) {
+            this.m_board.add(new ArrayList<Integer>());
+            for (int j = 0; j < 19; j++) {
+                this.m_board.get(i).add(_board.GetCell(j, i));
             }
         }
     }

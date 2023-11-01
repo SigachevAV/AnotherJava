@@ -1,11 +1,9 @@
 package org.example;
-
 public class Main {
     public static void main(String[] args)
     {
-        System.out.println("Hello world!");
         ServerHandler serverHandler = new ServerHandler();
         serverHandler.Accept();
-
+        System.out.println("Все есть");
     }
 }

@@ -1,9 +1,6 @@
 package org.example;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.PortUnreachableException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,74 +8,83 @@ import java.util.List;
 
 public class ServerHandler
 {
-    private Game game;
     private ServerSocket serverSocket;
     private List<Client> clients = new ArrayList<Client>();
-    private ProccesingThread proccesingThread = new ProccesingThread();
-
+    private List<Socket> sockets = new ArrayList<Socket>();
+    private Game m_game = new Game();
+    private TaskProcessor m_taskProcessor = new TaskProcessor();
     public ServerHandler()
     {
-        this.game = new Game();
-        try
-        {
-            serverSocket = new ServerSocket(new  Config().PORT, 2, new Config().ip);
-        }
-        catch (IOException e)
-        {
+        Config config = new Config();
+        try {
+            this.serverSocket = new ServerSocket(config.PORT, 2, config.ip);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        proccesingThread.start();
+        m_taskProcessor.start();
     }
     public void Accept()
     {
-        while (true)
+        while (clients.size() < 2)
         {
-            try
-            {
-                Socket tmp = serverSocket.accept();
-                clients.add(new Client(tmp));
-                System.out.println("Клиент получен, Имя: "+tmp.getPort());
-                if (clients.size() == 2) {
-                    break;
-                }
+            try {
+                Socket client = this.serverSocket.accept();
+                clients.add( new Client(client, m_game.m_turnQueue));
+                System.out.println("Получен клиент " + client.getPort());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            catch (IOException e)
-            {
+        }
+        System.out.println("Бродкаст");
+        Broadcast(new GameMassage(m_game.m_board, m_game.m_currentPlayer, "Игра началась"));
+    }
+
+    private void Broadcast(GameMassage _gameMassage)
+    {
+        for (int i = 0; i < clients.size(); i++)
+        {
+            try {
+                clients.get(i).m_objectOutputStream.writeObject(_gameMassage);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public class ProccesingThread extends Thread
+    private class TaskProcessor extends Thread
     {
         @Override
         public void run() {
-            while (true)
-            {
-                Turn temp = game.turnQueue.poll();
-                if (temp == null)
-                {
+            while (true) {
+                Turn turn = m_game.m_turnQueue.poll();
+                if (turn == null) {
                     try {
                         sleep(1000);
-                        continue;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                    continue;
                 }
-                System.out.println("обрабатываю ход");
-                if (game.MakeTurn(temp.m_x, temp.m_y, temp.m_player))
+                System.out.println("Ход обрабатываем");
+                GameMassage massage;
+                if (m_game.MakeTurn(turn.m_x, turn.m_y, turn.m_player))
                 {
-                    game.ChangeTurn();
-                    for (int i = 0; i < clients.size(); i++) {
-                        try {
-                            ObjectOutputStream oos = new ObjectOutputStream(clients.get(i).socket.getOutputStream());
-                            oos.writeObject(new GameMassage(game.m_board, game.m_currentPlayer, ""));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-
+                    m_game.ChangeTurn();
+                    if (m_game.IsWinner(turn.m_player))
+                    {
+                        massage = new GameMassage(m_game.m_board, m_game.m_currentPlayer, ("Победил ") + turn.m_player.toString());
                     }
+                    else
+                    {
+                        massage = new GameMassage(m_game.m_board, m_game.m_currentPlayer, "");
+                    }
+
                 }
+                else
+                {
+                    massage = new GameMassage(m_game.m_board, m_game.m_currentPlayer, "Неверный ход");
+                }
+                Broadcast(massage);
             }
         }
     }
