@@ -14,7 +14,8 @@ message GridResponse
 {
   int32 turn = 1;
   int32 id = 2;
-  repeated string grid = 3;
+  string grid = 3;
+  string message = 4;
 }
 
 service Connect6Service
