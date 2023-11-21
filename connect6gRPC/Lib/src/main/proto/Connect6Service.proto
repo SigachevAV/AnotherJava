@@ -1,0 +1,24 @@
+syntax = "proto3";
+package com.example.grpc;
+
+message TurnRequest
+{
+  int32 turn = 1;
+  int32 x = 2;
+  int32 y = 3;
+}
+
+message GridRequest {}
+
+message GridResponse
+{
+  int32 turn = 1;
+  int32 id = 2;
+  repeated string grid = 3;
+}
+
+service Connect6Service
+{
+  rpc GetGrid (GridRequest) returns (GridResponse);
+  rpc MakeTurn (TurnRequest) returns (GridResponse);
+}
