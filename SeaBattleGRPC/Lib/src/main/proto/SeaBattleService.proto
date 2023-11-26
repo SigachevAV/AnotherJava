@@ -1,0 +1,38 @@
+syntax = "proto3";
+package com.example.grpc;
+
+message GridRequest
+{
+  int32 turn = 1;
+}
+
+message ShipRequest
+{
+  int32 turn =1;
+  int32 size = 2;
+  int32 dir = 3;
+  int32  x = 4;
+  int32 y =5;
+}
+
+message TurnRequest
+{
+  int32 turn = 1;
+  int32 x = 2;
+  int32 y = 3;
+}
+
+message GridResponse
+{
+  int32 turn =1;
+  int32 id = 2;
+  string grid = 3;
+  string message = 4;
+}
+
+service SeaBattleService
+{
+  rpc GetGrid (GridRequest) returns (GridResponse);
+  rpc MakeTurn (TurnRequest) returns (GridResponse);
+  rpc SetShip (ShipRequest) returns (GridResponse);
+}
